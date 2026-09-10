@@ -1,0 +1,6 @@
+{
+  "name": "InvestSense",
+  "description": "AI-assisted investment decision-support platform with personalized risk profiling, portfolio optimization, TradeZella-style widgets, and explainable recommendations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
