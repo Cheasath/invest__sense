@@ -1,14 +1,31 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { AppShell } from '../components/ui/AppShell';
 import { StatCard } from '../components/ui/StatCard';
 import { usePortfolioStore } from '../store/usePortfolioStore';
+import { useQuotes } from '../hooks/useQuotes';
+import { TradeModal } from '../components/portfolio/TradeModal';
 import { portfolioStoreService } from '../services/mock/mockPortfolioStore';
-import { Activity, ShieldCheck, PieChart, ArrowUpRight, AlertTriangle, Calendar, Sliders, RefreshCw } from 'lucide-react';
+import { Activity, ShieldCheck, PieChart, ArrowUpRight, AlertTriangle, Calendar, Sliders, RefreshCw, Plus, TrendingDown } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const { activePortfolio, viewMode } = usePortfolioStore();
   const performanceHistory = portfolioStoreService.getDailyPerformanceHistory();
+
+  const [tradeModal, setTradeModal] = useState<{
+    isOpen: boolean;
+    symbol: string;
+    action: 'BUY' | 'SELL';
+  }>({
+    isOpen: false,
+    symbol: 'RELIANCE',
+    action: 'BUY'
+  });
+
+  const holdingSymbols = useMemo(() => {
+    return (activePortfolio?.holdings || []).map(h => h.symbol);
+  }, [activePortfolio?.holdings]);
+  const { quotes, isLoading, refetch } = useQuotes(holdingSymbols, 15000);
 
   if (!activePortfolio) {
     return (
@@ -223,14 +240,17 @@ export const DashboardPage: React.FC = () => {
                   <tr className="bg-[#1C2530] text-[#8B96A5] uppercase font-mono text-[10px]">
                     <th className="py-2.5 px-3 font-semibold">Asset</th>
                     <th className="py-2.5 px-3 font-semibold text-right">Qty</th>
+                    <th className="py-2.5 px-3 font-semibold text-right">Live Price</th>
                     <th className="py-2.5 px-3 font-semibold text-right">Value (INR)</th>
                     <th className="py-2.5 px-3 font-semibold text-right">Weight / Target</th>
                     <th className="py-2.5 px-3 font-semibold text-right">P&L</th>
+                    <th className="py-2.5 px-3 font-semibold text-center">Trade</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#232B36]/60">
                   {holdings.map(h => {
                     const isUp = h.unrealizedPnL >= 0;
+                    const liveP = quotes[h.symbol]?.price || h.currentPrice;
                     return (
                       <tr key={h.symbol} className="hover:bg-[#1C2530]/40 font-mono">
                         <td className="py-2.5 px-3">
@@ -239,7 +259,10 @@ export const DashboardPage: React.FC = () => {
                           </Link>
                           <div className="text-[10px] text-[#8B96A5]">{h.assetClass}</div>
                         </td>
-                        <td className="py-2.5 px-3 text-right text-[#E5E7EB]">{h.quantity}</td>
+                        <td className="py-2.5 px-3 text-right text-[#E5E7EB] font-bold">{h.quantity}</td>
+                        <td className="py-2.5 px-3 text-right text-[#2DD4BF] font-semibold">
+                          ₹{liveP.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </td>
                         <td className="py-2.5 px-3 text-right font-bold text-[#E5E7EB]">
                           ₹{h.currentValue.toLocaleString('en-IN')}
                         </td>
@@ -249,6 +272,28 @@ export const DashboardPage: React.FC = () => {
                         </td>
                         <td className={`py-2.5 px-3 text-right font-bold ${isUp ? 'text-[#22C55E]' : 'text-[#FB4B5C]'}`}>
                           {isUp ? '+' : ''}{h.unrealizedPnLPct.toFixed(2)}%
+                        </td>
+                        <td className="py-2.5 px-3 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setTradeModal({ isOpen: true, symbol: h.symbol, action: 'BUY' })}
+                              className="px-2 py-0.5 rounded bg-[#22C55E]/15 border border-[#22C55E]/30 text-[#22C55E] hover:bg-[#22C55E] hover:text-[#0D1117] text-[10px] font-bold transition-all flex items-center gap-0.5"
+                              title={`Buy more ${h.symbol}`}
+                            >
+                              <Plus className="w-2.5 h-2.5" />
+                              <span>Buy</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setTradeModal({ isOpen: true, symbol: h.symbol, action: 'SELL' })}
+                              className="px-2 py-0.5 rounded bg-[#FB4B5C]/15 border border-[#FB4B5C]/30 text-[#FB4B5C] hover:bg-[#FB4B5C] hover:text-white text-[10px] font-bold transition-all flex items-center gap-0.5"
+                              title={`Sell ${h.symbol}`}
+                            >
+                              <TrendingDown className="w-2.5 h-2.5" />
+                              <span>Sell</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -292,6 +337,14 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Trade Modal with "How Many Shares" confirmation pop up */}
+      <TradeModal
+        isOpen={tradeModal.isOpen}
+        onClose={() => setTradeModal(prev => ({ ...prev, isOpen: false }))}
+        initialSymbol={tradeModal.symbol}
+        initialAction={tradeModal.action}
+      />
     </AppShell>
   );
 };

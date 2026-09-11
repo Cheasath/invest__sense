@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { AppShell } from '../components/ui/AppShell';
 import { StatCard } from '../components/ui/StatCard';
 import { usePortfolioStore } from '../store/usePortfolioStore';
+import { useFinancialDna } from '../hooks/useFinancialDna';
 import { portfolioStoreService } from '../services/mock/mockPortfolioStore';
-import { ShieldAlert, AlertTriangle, Activity, Zap, Info } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, ShieldCheck, Zap, SlidersHorizontal, ArrowRight } from 'lucide-react';
 
 export const PortfolioRiskPage: React.FC = () => {
   const { activePortfolio } = usePortfolioStore();
+  const { financialDna } = useFinancialDna();
   const riskMetrics = portfolioStoreService.getRiskMetrics();
 
   const [activeScenario, setActiveScenario] = useState<string>('BASELINE');
@@ -23,6 +25,9 @@ export const PortfolioRiskPage: React.FC = () => {
   ];
 
   const currentScenario = scenarios.find(s => s.id === activeScenario) || scenarios[0];
+
+  // Compare actual max drawdown against Financial DNA tolerance limit
+  const isDrawdownBreached = Math.abs(riskMetrics.maxDrawdownPct) > financialDna.maxPermittedDrawdownPct;
 
   return (
     <AppShell>
@@ -40,8 +45,43 @@ export const PortfolioRiskPage: React.FC = () => {
               Portfolio Risk Management & Stress Testing
             </h1>
             <p className="text-xs text-[#8B96A5]">
-              Quantifies Value-at-Risk (VaR 95%), Expected Shortfall (CVaR), Herfindahl Concentration, and Macro Stress Scenarios.
+              Quantifies Value-at-Risk (VaR 95%), Expected Shortfall (CVaR), Herfindahl Concentration, and Macro Stress Scenarios governed by your Financial DNA.
             </p>
+          </div>
+
+          {/* Connected Financial DNA Baseline Pill */}
+          <Link
+            to="/financial-dna"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#1C2530] border border-[#232B36] hover:border-[#2DD4BF] text-xs font-mono text-[#E5E7EB] transition-all group"
+          >
+            <ShieldCheck className="w-4 h-4 text-[#2DD4BF]" />
+            <div>
+              <div className="text-[10px] text-[#8B96A5]">Financial DNA Baseline</div>
+              <div className="font-bold text-[#2DD4BF]">Budget: {financialDna.finalRiskBudget}/100</div>
+            </div>
+            <ArrowRight className="w-3.5 h-3.5 text-[#8B96A5] group-hover:translate-x-1 transition-transform ml-1" />
+          </Link>
+        </div>
+
+        {/* FINANCIAL DNA GOVERNING RISK BOUNDS BANNER */}
+        <div className="p-4 bg-[#1C2530] border border-[#232B36] rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-mono">
+          <div className="flex items-center gap-2.5">
+            <ShieldCheck className="w-5 h-5 text-[#2DD4BF] shrink-0" />
+            <div>
+              <span className="font-bold text-[#E5E7EB]">Governing DNA Risk Ceiling: </span>
+              <span className="text-[#2DD4BF] font-bold">Max Permitted Drawdown -{financialDna.maxPermittedDrawdownPct}%</span>
+              <span className="text-[#8B96A5] ml-2 hidden md:inline">
+                (Target Volatility Cap: {financialDna.targetVolatilityCeilingPct}% • Max Equity: {financialDna.maxEquityAllocationPct}%)
+              </span>
+            </div>
+          </div>
+
+          <div className={`px-2.5 py-1 rounded-lg text-[11px] font-bold ${
+            isDrawdownBreached
+              ? 'bg-[#FB4B5C]/20 text-[#FB4B5C] border border-[#FB4B5C]/30'
+              : 'bg-[#22C55E]/20 text-[#22C55E] border border-[#22C55E]/30'
+          }`}>
+            {isDrawdownBreached ? '⚠️ DNA Drawdown Limit Exceeded' : '✓ Compliant with DNA Risk Budget'}
           </div>
         </div>
 
@@ -66,9 +106,9 @@ export const PortfolioRiskPage: React.FC = () => {
           <StatCard
             title="MAX HISTORICAL DRAWDOWN"
             value={`${riskMetrics.maxDrawdownPct}%`}
-            subtitle="Peak-to-trough worst decline"
-            badge="Tolerance: -22%"
-            accentColor="#F5B841"
+            subtitle={`DNA Bound: -${financialDna.maxPermittedDrawdownPct}%`}
+            badge={`Tolerance: -${financialDna.maxPermittedDrawdownPct}%`}
+            accentColor={isDrawdownBreached ? '#FB4B5C' : '#F5B841'}
           />
 
           <StatCard

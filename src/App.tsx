@@ -18,6 +18,7 @@ import { BacktestPage } from './pages/BacktestPage';
 import { WatchlistPage } from './pages/WatchlistPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AdminPage } from './pages/AdminPage';
+import { FinancialDnaPage } from './pages/FinancialDnaPage';
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/register" element={<AuthPage isRegister={true} />} />
         <Route path="/onboarding/profile" element={<OnboardingProfilePage />} />
         <Route path="/onboarding/risk" element={<OnboardingRiskPage />} />
+        <Route path="/financial-dna" element={<FinancialDnaPage />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/asset/:id" element={<AssetDetailPage />} />

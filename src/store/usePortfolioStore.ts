@@ -14,7 +14,7 @@ interface PortfolioState {
   setActivePortfolio: (id: string) => void;
   setViewMode: (mode: ViewMode) => void;
   toggleWatchlist: (symbol: string) => void;
-  executeTrade: (portfolioId: string, symbol: string, quantityDelta: number, price: number) => void;
+  executeTrade: (portfolioId: string, symbol: string, quantityDelta: number, price: number, notes?: string) => void;
   executeSimulatorTrade: (symbol: string, type: 'BUY' | 'SELL', qty: number, price: number) => void;
   updateLiveQuotes: (quotes: Record<string, Quote>) => void;
 }
@@ -57,8 +57,8 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
     set({ watchlist: updated });
   },
 
-  executeTrade: (portfolioId: string, symbol: string, quantityDelta: number, price: number) => {
-    portfolioStoreService.updateHolding(portfolioId, symbol, quantityDelta, price);
+  executeTrade: (portfolioId: string, symbol: string, quantityDelta: number, price: number, notes?: string) => {
+    portfolioStoreService.updateHolding(portfolioId, symbol, quantityDelta, price, notes);
     const updatedList = portfolioStoreService.getPortfolios();
     const updatedActive = updatedList.find(p => p.id === portfolioId) || updatedList[0];
     set({ portfolios: updatedList, activePortfolio: updatedActive });
@@ -88,7 +88,9 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   updateLiveQuotes: (quotes: Record<string, Quote>) => {
     const { activePortfolio } = get();
     if (!activePortfolio) return;
-    portfolioStoreService.updatePortfolioQuotes(activePortfolio.id, quotes);
+    const hasChanges = portfolioStoreService.updatePortfolioQuotes(activePortfolio.id, quotes);
+    if (!hasChanges) return; // Prevent unnecessary re-renders across the whole application
+    
     const updatedList = portfolioStoreService.getPortfolios();
     const updatedActive = updatedList.find(p => p.id === activePortfolio.id) || updatedList[0];
     set({ portfolios: updatedList, activePortfolio: updatedActive });

@@ -1,8 +1,210 @@
-import { Portfolio, Holding, Quote, Recommendation, BacktestResult, DailyPerformance, RiskMetrics } from '../../types';
+import { Portfolio, Holding, Quote, Recommendation, BacktestResult, DailyPerformance, RiskMetrics, AssetTransaction, AssetHoldingLifecycle } from '../../types';
 import { CURATED_UNIVERSE, INITIAL_BASE_QUOTES } from './mockUniverse';
 
 const PORTFOLIO_STORAGE_KEY = 'investsense_user_portfolios';
 const WATCHLIST_STORAGE_KEY = 'investsense_watchlist';
+
+export const INITIAL_DEFAULT_TRANSACTIONS: AssetTransaction[] = [
+  {
+    id: 'tx_init_01',
+    portfolioId: 'pf_main_01',
+    symbol: 'RELIANCE',
+    assetName: 'Reliance Industries Ltd.',
+    assetClass: 'EQUITY',
+    type: 'INITIAL_ALLOCATION',
+    timestamp: '2026-01-15T09:30:00.000Z',
+    quantity: 60,
+    price: 1210.00,
+    totalValue: 72600,
+    avgCostAtExecution: 1210.00,
+    cashBalanceAfter: 427400,
+    notes: 'Core Indian Equity - Initial energy & digital telecom bedrock allocation'
+  },
+  {
+    id: 'tx_init_02',
+    portfolioId: 'pf_main_01',
+    symbol: 'TCS',
+    assetName: 'Tata Consultancy Services',
+    assetClass: 'EQUITY',
+    type: 'INITIAL_ALLOCATION',
+    timestamp: '2026-01-15T09:35:00.000Z',
+    quantity: 40,
+    price: 2130.00,
+    totalValue: 85200,
+    avgCostAtExecution: 2130.00,
+    cashBalanceAfter: 342200,
+    notes: 'Core IT export leader initial position'
+  },
+  {
+    id: 'tx_init_03',
+    portfolioId: 'pf_main_01',
+    symbol: 'HDFCBANK',
+    assetName: 'HDFC Bank Ltd.',
+    assetClass: 'EQUITY',
+    type: 'INITIAL_ALLOCATION',
+    timestamp: '2026-01-15T09:40:00.000Z',
+    quantity: 120,
+    price: 665.00,
+    totalValue: 79800,
+    avgCostAtExecution: 665.00,
+    cashBalanceAfter: 262400,
+    notes: 'Private banking core pillar allocation'
+  },
+  {
+    id: 'tx_init_04',
+    portfolioId: 'pf_main_01',
+    symbol: 'NIFTYBEES',
+    assetName: 'Nippon India ETF Nifty 50 BeES',
+    assetClass: 'ETF',
+    type: 'INITIAL_ALLOCATION',
+    timestamp: '2026-01-15T09:45:00.000Z',
+    quantity: 300,
+    price: 252.00,
+    totalValue: 75600,
+    avgCostAtExecution: 252.00,
+    cashBalanceAfter: 186800,
+    notes: 'Broad market benchmark ETF foundation (Beta anchor)'
+  },
+  {
+    id: 'tx_init_05',
+    portfolioId: 'pf_main_01',
+    symbol: 'GOLDBEES',
+    assetName: 'Nippon India ETF Gold BeES',
+    assetClass: 'GOLD',
+    type: 'INITIAL_ALLOCATION',
+    timestamp: '2026-01-15T09:50:00.000Z',
+    quantity: 500,
+    price: 116.50,
+    totalValue: 58250,
+    avgCostAtExecution: 116.50,
+    cashBalanceAfter: 128550,
+    notes: 'Precious metal systemic risk and currency debasement hedge'
+  },
+  {
+    id: 'tx_init_06',
+    portfolioId: 'pf_main_01',
+    symbol: 'IN_10Y_GSEC',
+    assetName: 'India 10-Year Government Securities Bond',
+    assetClass: 'BOND',
+    type: 'INITIAL_ALLOCATION',
+    timestamp: '2026-01-15T09:55:00.000Z',
+    quantity: 480,
+    price: 100.00,
+    totalValue: 48000,
+    avgCostAtExecution: 100.00,
+    cashBalanceAfter: 80550,
+    notes: 'Sovereign risk-free yield & duration anchor'
+  },
+  {
+    id: 'tx_add_01',
+    portfolioId: 'pf_main_01',
+    symbol: 'RELIANCE',
+    assetName: 'Reliance Industries Ltd.',
+    assetClass: 'EQUITY',
+    type: 'BUY',
+    timestamp: '2026-02-10T11:15:00.000Z',
+    quantity: 20,
+    price: 1250.00,
+    totalValue: 25000,
+    avgCostAtExecution: 1220.00,
+    cashBalanceAfter: 55550,
+    notes: 'Accumulated 20 shares on 50-day EMA support test. Adjusted average buy price to ₹1,220.00'
+  },
+  {
+    id: 'tx_add_02',
+    portfolioId: 'pf_main_01',
+    symbol: 'TCS',
+    assetName: 'Tata Consultancy Services',
+    assetClass: 'EQUITY',
+    type: 'BUY',
+    timestamp: '2026-02-18T14:20:00.000Z',
+    quantity: 20,
+    price: 2190.00,
+    totalValue: 43800,
+    avgCostAtExecution: 2150.00,
+    cashBalanceAfter: 51750,
+    notes: 'Added 20 shares following institutional deals inflow.'
+  },
+  {
+    id: 'tx_add_03',
+    portfolioId: 'pf_main_01',
+    symbol: 'HDFCBANK',
+    assetName: 'HDFC Bank Ltd.',
+    assetClass: 'EQUITY',
+    type: 'BUY',
+    timestamp: '2026-02-25T10:45:00.000Z',
+    quantity: 30,
+    price: 690.00,
+    totalValue: 20700,
+    avgCostAtExecution: 670.00,
+    cashBalanceAfter: 41050,
+    notes: 'Strategic accumulation to reach target 18% portfolio weighting.'
+  },
+  {
+    id: 'tx_add_04',
+    portfolioId: 'pf_main_01',
+    symbol: 'NIFTYBEES',
+    assetName: 'Nippon India ETF Nifty 50 BeES',
+    assetClass: 'ETF',
+    type: 'BUY',
+    timestamp: '2026-03-02T12:00:00.000Z',
+    quantity: 100,
+    price: 264.00,
+    totalValue: 26400,
+    avgCostAtExecution: 255.00,
+    cashBalanceAfter: 64650,
+    notes: 'Monthly SIP passive indexing inflow.'
+  },
+  {
+    id: 'tx_add_05',
+    portfolioId: 'pf_main_01',
+    symbol: 'GOLDBEES',
+    assetName: 'Nippon India ETF Gold BeES',
+    assetClass: 'GOLD',
+    type: 'BUY',
+    timestamp: '2026-03-05T15:10:00.000Z',
+    quantity: 100,
+    price: 125.50,
+    totalValue: 12550,
+    avgCostAtExecution: 118.00,
+    cashBalanceAfter: 52100,
+    notes: 'Safe haven gold accumulation.'
+  },
+  {
+    id: 'tx_sell_01',
+    portfolioId: 'pf_main_01',
+    symbol: 'TCS',
+    assetName: 'Tata Consultancy Services',
+    assetClass: 'EQUITY',
+    type: 'SELL',
+    timestamp: '2026-03-12T13:30:00.000Z',
+    quantity: 10,
+    price: 2260.00,
+    totalValue: 22600,
+    realizedPnL: 1100.00,
+    realizedPnLPct: 5.12,
+    avgCostAtExecution: 2150.00,
+    cashBalanceAfter: 74700,
+    notes: 'Tactical rebalance: trimmed 10 units near local resistance at ₹2,260. Realized profit +₹1,100 (+5.12%).'
+  },
+  {
+    id: 'tx_sell_02',
+    portfolioId: 'pf_main_01',
+    symbol: 'INFY',
+    assetName: 'Infosys Limited',
+    assetClass: 'EQUITY',
+    type: 'SELL',
+    timestamp: '2026-03-20T14:45:00.000Z',
+    quantity: 25,
+    price: 1620.00,
+    totalValue: 40500,
+    realizedPnL: 3500.00,
+    realizedPnLPct: 9.46,
+    avgCostAtExecution: 1480.00,
+    cashBalanceAfter: 85000,
+    notes: 'Fully closed tactical short-term swing position. Realized gain +₹3,500 (+9.46%).'
+  }
+];
 
 export const INITIAL_DEFAULT_PORTFOLIO: Portfolio = {
   id: 'pf_main_01',
@@ -11,34 +213,35 @@ export const INITIAL_DEFAULT_PORTFOLIO: Portfolio = {
   baseCurrency: 'INR',
   createdAt: '2026-01-15T00:00:00.000Z',
   updatedAt: new Date().toISOString(),
-  cashBalance: 125000,
+  cashBalance: 85000,
+  transactions: INITIAL_DEFAULT_TRANSACTIONS,
   holdings: [
     {
       symbol: 'RELIANCE',
       name: 'Reliance Industries Ltd.',
       assetClass: 'EQUITY',
       sector: 'Energy & Petrochemicals',
-      quantity: 50,
-      avgBuyPrice: 2850.00,
-      currentPrice: 2980.50,
-      currentValue: 149025,
-      unrealizedPnL: 6525,
-      unrealizedPnLPct: 4.58,
-      weightPct: 22.5,
-      targetWeightPct: 20.0
+      quantity: 80,
+      avgBuyPrice: 1220.00,
+      currentPrice: 1263.80,
+      currentValue: 101104,
+      unrealizedPnL: 3504,
+      unrealizedPnLPct: 3.59,
+      weightPct: 16.0,
+      targetWeightPct: 18.0
     },
     {
       symbol: 'TCS',
       name: 'Tata Consultancy Services',
       assetClass: 'EQUITY',
       sector: 'Information Technology',
-      quantity: 30,
-      avgBuyPrice: 4050.00,
-      currentPrice: 4185.20,
-      currentValue: 125556,
-      unrealizedPnL: 4056,
-      unrealizedPnLPct: 3.34,
-      weightPct: 19.0,
+      quantity: 50,
+      avgBuyPrice: 2150.00,
+      currentPrice: 2211.30,
+      currentValue: 110565,
+      unrealizedPnL: 3065,
+      unrealizedPnLPct: 2.85,
+      weightPct: 17.5,
       targetWeightPct: 15.0
     },
     {
@@ -46,42 +249,42 @@ export const INITIAL_DEFAULT_PORTFOLIO: Portfolio = {
       name: 'HDFC Bank Ltd.',
       assetClass: 'EQUITY',
       sector: 'Financial Services',
-      quantity: 75,
-      avgBuyPrice: 1580.00,
-      currentPrice: 1642.80,
-      currentValue: 123210,
-      unrealizedPnL: 4710,
-      unrealizedPnLPct: 3.97,
-      weightPct: 18.6,
-      targetWeightPct: 20.0
+      quantity: 150,
+      avgBuyPrice: 670.00,
+      currentPrice: 699.85,
+      currentValue: 104977.5,
+      unrealizedPnL: 4477.5,
+      unrealizedPnLPct: 4.46,
+      weightPct: 16.6,
+      targetWeightPct: 18.0
     },
     {
       symbol: 'NIFTYBEES',
       name: 'Nippon India ETF Nifty 50 BeES',
       assetClass: 'ETF',
       sector: 'Broad Market ETF',
-      quantity: 500,
+      quantity: 400,
       avgBuyPrice: 255.00,
-      currentPrice: 268.40,
-      currentValue: 134200,
-      unrealizedPnL: 6700,
-      unrealizedPnLPct: 5.25,
-      weightPct: 20.3,
-      targetWeightPct: 25.0
+      currentPrice: 265.58,
+      currentValue: 106232,
+      unrealizedPnL: 4232,
+      unrealizedPnLPct: 4.15,
+      weightPct: 16.8,
+      targetWeightPct: 20.0
     },
     {
       symbol: 'GOLDBEES',
       name: 'Nippon India ETF Gold BeES',
       assetClass: 'GOLD',
       sector: 'Precious Metals',
-      quantity: 1200,
-      avgBuyPrice: 64.50,
-      currentPrice: 68.20,
-      currentValue: 81840,
-      unrealizedPnL: 4440,
-      unrealizedPnLPct: 5.74,
-      weightPct: 12.4,
-      targetWeightPct: 10.0
+      quantity: 600,
+      avgBuyPrice: 118.00,
+      currentPrice: 125.37,
+      currentValue: 75222,
+      unrealizedPnL: 4422,
+      unrealizedPnLPct: 6.25,
+      weightPct: 11.9,
+      targetWeightPct: 12.0
     },
     {
       symbol: 'IN_10Y_GSEC',
@@ -94,44 +297,87 @@ export const INITIAL_DEFAULT_PORTFOLIO: Portfolio = {
       currentValue: 48384,
       unrealizedPnL: 384,
       unrealizedPnLPct: 0.80,
-      weightPct: 7.2,
+      weightPct: 7.7,
       targetWeightPct: 10.0
     }
   ],
-  totalValue: 787215,
-  totalCost: 756400,
-  totalPnL: 30815,
-  totalPnLPct: 4.07,
-  dayPnL: 6420,
-  dayPnLPct: 0.82,
+  totalValue: 631484.5,
+  totalCost: 611400,
+  totalPnL: 20084.5,
+  totalPnLPct: 3.29,
+  dayPnL: 4820,
+  dayPnLPct: 0.77,
   healthScore: {
-    compositeScore: 84,
-    diversificationScore: 82,
+    compositeScore: 86,
+    diversificationScore: 84,
     riskAlignmentScore: 88,
-    driftScore: 82,
+    driftScore: 85,
     status: 'EXCELLENT',
     insights: [
-      'Strong cross-asset diversification across Equities, Gold, ETFs, and Sovereign Bonds.',
-      'Minor weight drift detected in TCS (+4.0% vs target). Rebalancing advised.',
-      'Portfolio Sharpe ratio stands at 1.84 with comfortable max drawdown buffer.'
+      'Well-diversified cross-asset allocation matching real-time market valuations.',
+      'Slight drift in TCS (+2.5% vs target). Rebalancing opportunity detected.',
+      'Portfolio Sharpe ratio stands at 1.88 with adequate drawdown buffer.'
     ]
   }
 };
 
 export class PortfolioStoreService {
+  private memoryCache: Portfolio[] | null = null;
+
   public getPortfolios(): Portfolio[] {
+    if (this.memoryCache) {
+      return this.memoryCache;
+    }
+
     try {
       const raw = localStorage.getItem(PORTFOLIO_STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const parsed: Portfolio[] = JSON.parse(raw);
+        // Automatically check and migrate any legacy outdated prices or missing transactions
+        let needsSave = false;
+        for (const p of parsed) {
+          if (!p.transactions || p.transactions.length === 0) {
+            p.transactions = [...INITIAL_DEFAULT_TRANSACTIONS];
+            needsSave = true;
+          }
+
+          const hasLegacyPrice = p.holdings.some(h => (h.symbol === 'RELIANCE' && h.currentPrice > 2000) || (h.symbol === 'TCS' && h.currentPrice > 3500));
+          if (hasLegacyPrice) {
+            for (const h of p.holdings) {
+              const sym = h.symbol.toUpperCase();
+              if (INITIAL_BASE_QUOTES[sym]) {
+                h.currentPrice = INITIAL_BASE_QUOTES[sym].price;
+                if (sym === 'RELIANCE') h.avgBuyPrice = 1220.00;
+                if (sym === 'TCS') h.avgBuyPrice = 2150.00;
+                if (sym === 'HDFCBANK') h.avgBuyPrice = 670.00;
+                if (sym === 'GOLDBEES') h.avgBuyPrice = 118.00;
+              }
+            }
+            this.recalculatePortfolio(p);
+            needsSave = true;
+          }
+        }
+        this.memoryCache = parsed;
+        if (needsSave) {
+          this.savePortfolios(parsed);
+        }
+        return parsed;
+      }
     } catch (e) {}
 
     const list = [INITIAL_DEFAULT_PORTFOLIO];
-    localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify(list));
+    this.memoryCache = list;
+    try {
+      localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify(list));
+    } catch (e) {}
     return list;
   }
 
   public savePortfolios(portfolios: Portfolio[]) {
-    localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify(portfolios));
+    this.memoryCache = portfolios;
+    try {
+      localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify(portfolios));
+    } catch (e) {}
   }
 
   public getPortfolioById(id: string): Portfolio | null {
@@ -139,31 +385,68 @@ export class PortfolioStoreService {
     return list.find(p => p.id === id) || list[0] || null;
   }
 
-  public updateHolding(portfolioId: string, symbol: string, quantityDelta: number, price: number) {
+  public updateHolding(portfolioId: string, symbol: string, quantityDelta: number, price: number, notes?: string) {
     const list = this.getPortfolios();
     const pf = list.find(p => p.id === portfolioId);
     if (!pf) return;
 
+    if (!pf.transactions) {
+      pf.transactions = [...INITIAL_DEFAULT_TRANSACTIONS];
+    }
+
     const existingIdx = pf.holdings.findIndex(h => h.symbol === symbol);
     const asset = CURATED_UNIVERSE.find(a => a.symbol === symbol) || {
-      symbol, name: symbol, assetClass: 'EQUITY', sector: 'General'
+      symbol, name: symbol, assetClass: 'EQUITY' as const, sector: 'General'
     };
+
+    const absQty = Math.abs(quantityDelta);
+    let txType: 'BUY' | 'SELL' | 'INITIAL_ALLOCATION' = quantityDelta > 0 ? (existingIdx >= 0 ? 'BUY' : 'INITIAL_ALLOCATION') : 'SELL';
+    let realizedPnL: number | undefined = undefined;
+    let realizedPnLPct: number | undefined = undefined;
+    let avgCostAtExecution: number | undefined = undefined;
 
     if (existingIdx >= 0) {
       const h = pf.holdings[existingIdx];
       const newQty = h.quantity + quantityDelta;
+      avgCostAtExecution = h.avgBuyPrice;
+
       if (newQty <= 0) {
+        // Full liquidation / sell all shares
+        const cashProceeds = h.quantity * price;
+        pf.cashBalance = +(pf.cashBalance + cashProceeds).toFixed(2);
+        realizedPnL = +((price - h.avgBuyPrice) * h.quantity).toFixed(2);
+        realizedPnLPct = h.avgBuyPrice > 0 ? +(((price - h.avgBuyPrice) / h.avgBuyPrice) * 100).toFixed(2) : 0;
         pf.holdings.splice(existingIdx, 1);
-      } else {
-        const totalSpent = (h.quantity * h.avgBuyPrice) + (quantityDelta * price);
+      } else if (quantityDelta < 0) {
+        // Partial sell of shares
+        const soldQty = Math.abs(quantityDelta);
+        const cashProceeds = soldQty * price;
+        pf.cashBalance = +(pf.cashBalance + cashProceeds).toFixed(2);
+        realizedPnL = +((price - h.avgBuyPrice) * soldQty).toFixed(2);
+        realizedPnLPct = h.avgBuyPrice > 0 ? +(((price - h.avgBuyPrice) / h.avgBuyPrice) * 100).toFixed(2) : 0;
         h.quantity = newQty;
-        h.avgBuyPrice = totalSpent / newQty;
+        // Average buy price does not change when selling existing shares
         h.currentPrice = price;
-        h.currentValue = newQty * price;
-        h.unrealizedPnL = h.currentValue - (newQty * h.avgBuyPrice);
-        h.unrealizedPnLPct = (h.unrealizedPnL / (newQty * h.avgBuyPrice)) * 100;
+        h.currentValue = +(newQty * price).toFixed(2);
+        h.unrealizedPnL = +(h.currentValue - (newQty * h.avgBuyPrice)).toFixed(2);
+        h.unrealizedPnLPct = h.avgBuyPrice > 0 ? +((h.unrealizedPnL / (newQty * h.avgBuyPrice)) * 100).toFixed(2) : 0;
+      } else {
+        // Buying more shares of existing holding
+        const cost = quantityDelta * price;
+        pf.cashBalance = +(Math.max(0, pf.cashBalance - cost)).toFixed(2);
+        const totalSpent = (h.quantity * h.avgBuyPrice) + cost;
+        h.quantity = newQty;
+        h.avgBuyPrice = +(totalSpent / newQty).toFixed(2);
+        h.currentPrice = price;
+        h.currentValue = +(newQty * price).toFixed(2);
+        h.unrealizedPnL = +(h.currentValue - (newQty * h.avgBuyPrice)).toFixed(2);
+        h.unrealizedPnLPct = h.avgBuyPrice > 0 ? +((h.unrealizedPnL / (newQty * h.avgBuyPrice)) * 100).toFixed(2) : 0;
       }
     } else if (quantityDelta > 0) {
+      // Adding a new asset into portfolio
+      const cost = quantityDelta * price;
+      pf.cashBalance = +(Math.max(0, pf.cashBalance - cost)).toFixed(2);
+      avgCostAtExecution = price;
       pf.holdings.push({
         symbol,
         name: asset.name,
@@ -172,7 +455,7 @@ export class PortfolioStoreService {
         quantity: quantityDelta,
         avgBuyPrice: price,
         currentPrice: price,
-        currentValue: quantityDelta * price,
+        currentValue: +(quantityDelta * price).toFixed(2),
         unrealizedPnL: 0,
         unrealizedPnLPct: 0,
         weightPct: 0,
@@ -180,20 +463,132 @@ export class PortfolioStoreService {
       });
     }
 
+    // Record transaction
+    const newTx: AssetTransaction = {
+      id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      portfolioId: pf.id,
+      symbol,
+      assetName: asset.name,
+      assetClass: asset.assetClass,
+      type: txType,
+      timestamp: new Date().toISOString(),
+      quantity: absQty,
+      price,
+      totalValue: +(absQty * price).toFixed(2),
+      realizedPnL,
+      realizedPnLPct,
+      avgCostAtExecution,
+      cashBalanceAfter: pf.cashBalance,
+      notes: notes || (quantityDelta > 0
+        ? `Added ${absQty} shares at ₹${price.toFixed(2)}`
+        : `Sold ${absQty} shares at ₹${price.toFixed(2)}${realizedPnL !== undefined ? ` (Realized P&L: ${realizedPnL >= 0 ? '+' : ''}₹${realizedPnL.toLocaleString('en-IN')})` : ''}`)
+    };
+
+    pf.transactions = [newTx, ...(pf.transactions || [])];
+
     // Recalculate totals and weights
     this.recalculatePortfolio(pf);
     this.savePortfolios(list);
   }
 
-  public updatePortfolioQuotes(portfolioId: string, quotes: Record<string, Quote>) {
+  public getAssetHoldingLifecycles(portfolioId: string): AssetHoldingLifecycle[] {
+    const pf = this.getPortfolioById(portfolioId);
+    if (!pf) return [];
+
+    const txs = pf.transactions || [];
+    const holdingsMap = new Map<string, Holding>();
+    for (const h of pf.holdings) {
+      holdingsMap.set(h.symbol.toUpperCase(), h);
+    }
+
+    // Gather all unique symbols from holdings and transactions
+    const uniqueSymbols = Array.from(new Set([
+      ...pf.holdings.map(h => h.symbol.toUpperCase()),
+      ...txs.map(t => t.symbol.toUpperCase())
+    ]));
+
+    const lifecycles: AssetHoldingLifecycle[] = [];
+
+    for (const sym of uniqueSymbols) {
+      const symTxs = txs.filter(t => t.symbol.toUpperCase() === sym).sort((a, b) => 
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+      const activeHolding = holdingsMap.get(sym);
+      const assetMeta = CURATED_UNIVERSE.find(a => a.symbol.toUpperCase() === sym);
+
+      const name = activeHolding?.name || symTxs[0]?.assetName || assetMeta?.name || sym;
+      const assetClass = activeHolding?.assetClass || symTxs[0]?.assetClass || assetMeta?.assetClass || 'EQUITY';
+      const sector = activeHolding?.sector || assetMeta?.sector || 'Diversified';
+
+      let totalUnitsBought = 0;
+      let totalUnitsSold = 0;
+      let totalCapitalInvested = 0;
+      let totalCapitalRealized = 0;
+      let netRealizedPnL = 0;
+
+      for (const t of symTxs) {
+        if (t.type === 'BUY' || t.type === 'INITIAL_ALLOCATION') {
+          totalUnitsBought += t.quantity;
+          totalCapitalInvested += t.totalValue;
+        } else if (t.type === 'SELL') {
+          totalUnitsSold += t.quantity;
+          totalCapitalRealized += t.totalValue;
+          if (t.realizedPnL !== undefined) {
+            netRealizedPnL += t.realizedPnL;
+          }
+        }
+      }
+
+      const firstBoughtDate = symTxs.length > 0 ? symTxs[0].timestamp : (pf.createdAt || new Date().toISOString());
+      const lastTradedDate = symTxs.length > 0 ? symTxs[symTxs.length - 1].timestamp : (pf.updatedAt || new Date().toISOString());
+
+      const firstTime = new Date(firstBoughtDate).getTime();
+      const lastTime = activeHolding ? Date.now() : new Date(lastTradedDate).getTime();
+      const holdingPeriodDays = Math.max(1, Math.round((lastTime - firstTime) / (1000 * 60 * 60 * 24)));
+
+      const currentQuantity = activeHolding ? activeHolding.quantity : 0;
+      const avgBuyPrice = activeHolding ? activeHolding.avgBuyPrice : (totalUnitsBought > 0 ? totalCapitalInvested / totalUnitsBought : 0);
+
+      lifecycles.push({
+        symbol: sym,
+        name,
+        assetClass,
+        sector,
+        status: currentQuantity > 0 ? 'ACTIVE' : 'LIQUIDATED',
+        firstBoughtDate,
+        lastTradedDate,
+        holdingPeriodDays,
+        totalUnitsBought,
+        totalUnitsSold,
+        currentQuantity,
+        totalCapitalInvested: +totalCapitalInvested.toFixed(2),
+        totalCapitalRealized: +totalCapitalRealized.toFixed(2),
+        netRealizedPnL: +netRealizedPnL.toFixed(2),
+        avgBuyPrice: +avgBuyPrice.toFixed(2),
+        currentValue: activeHolding?.currentValue,
+        unrealizedPnL: activeHolding?.unrealizedPnL,
+        unrealizedPnLPct: activeHolding?.unrealizedPnLPct,
+        tradesCount: symTxs.length
+      });
+    }
+
+    return lifecycles.sort((a, b) => {
+      // Active first, then by value or total invested
+      if (a.status === 'ACTIVE' && b.status !== 'ACTIVE') return -1;
+      if (b.status === 'ACTIVE' && a.status !== 'ACTIVE') return 1;
+      return (b.currentValue || b.totalCapitalInvested) - (a.currentValue || a.totalCapitalInvested);
+    });
+  }
+
+  public updatePortfolioQuotes(portfolioId: string, quotes: Record<string, Quote>): boolean {
     const list = this.getPortfolios();
     const pf = list.find(p => p.id === portfolioId);
-    if (!pf) return;
+    if (!pf) return false;
 
     let updated = false;
     for (const h of pf.holdings) {
       const q = quotes[h.symbol.toUpperCase()];
-      if (q && q.price > 0 && q.price !== h.currentPrice) {
+      if (q && q.price > 0 && Math.abs(q.price - h.currentPrice) > 0.001) {
         h.currentPrice = q.price;
         updated = true;
       }
@@ -203,6 +598,7 @@ export class PortfolioStoreService {
       this.recalculatePortfolio(pf);
       this.savePortfolios(list);
     }
+    return updated;
   }
 
   public recalculatePortfolio(pf: Portfolio) {

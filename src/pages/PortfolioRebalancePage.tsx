@@ -2,25 +2,32 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { AppShell } from '../components/ui/AppShell';
 import { usePortfolioStore } from '../store/usePortfolioStore';
-import { Repeat, AlertTriangle, CheckCircle2, ShieldCheck, ArrowRight, Info } from 'lucide-react';
+import { useQuotes } from '../hooks/useQuotes';
+import { Repeat, AlertTriangle, CheckCircle2, ShieldCheck, ArrowRight, Info, RefreshCw } from 'lucide-react';
 
 export const PortfolioRebalancePage: React.FC = () => {
   const { activePortfolio } = usePortfolioStore();
+
+  const symbols = (activePortfolio?.holdings || []).map(h => h.symbol);
+  const { quotes, isLoading, refetch } = useQuotes(symbols, 15000);
 
   if (!activePortfolio) return null;
 
   const { holdings, totalValue } = activePortfolio;
 
-  // Calculate drift per holding
+  // Calculate drift per holding using live price when available
   const rebalanceRows = holdings.map(h => {
+    const livePrice = quotes[h.symbol]?.price || h.currentPrice;
+    const currentVal = h.quantity * livePrice;
     const driftPct = +(h.weightPct - h.targetWeightPct).toFixed(1);
     const targetValue = (h.targetWeightPct / 100) * totalValue;
-    const valueDeltaINR = targetValue - h.currentValue;
-    const shareDelta = Math.round(valueDeltaINR / h.currentPrice);
+    const valueDeltaINR = targetValue - currentVal;
+    const shareDelta = Math.round(valueDeltaINR / livePrice);
     const requiresAction = Math.abs(driftPct) >= 2.0;
 
     return {
       ...h,
+      livePrice,
       driftPct,
       targetValue,
       valueDeltaINR,
@@ -45,11 +52,19 @@ export const PortfolioRebalancePage: React.FC = () => {
               Portfolio Rebalancing & Re-alignment
             </h1>
             <p className="text-xs text-[#8B96A5]">
-              Identifies weight drift beyond tolerance threshold (±2.0%) and generates exact order quantities to realign.
+              Identifies weight drift beyond tolerance threshold (±2.0%) and generates exact order quantities using live prices.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => refetch()}
+              disabled={isLoading}
+              className="px-3.5 py-1.5 rounded-lg bg-[#1C2530] border border-[#232B36] text-xs font-mono text-[#2DD4BF] hover:border-[#2DD4BF] transition-all flex items-center gap-1.5"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              <span>{isLoading ? 'Updating...' : 'Sync Prices'}</span>
+            </button>
             <span className={`text-xs font-mono font-bold px-3 py-1.5 rounded-lg border ${
               totalActionsNeeded > 0
                 ? 'bg-[#F5B841]/10 border-[#F5B841]/40 text-[#F5B841]'

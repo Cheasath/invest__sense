@@ -19,6 +19,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     loadPortfolios();
   }, [checkAuth, loadPortfolios]);
 
+  const symbolsKey = (activePortfolio?.holdings || []).map(h => h.symbol).sort().join(',');
+
   useEffect(() => {
     if (!activePortfolio || !activePortfolio.holdings.length) return;
     const symbols = activePortfolio.holdings.map(h => h.symbol);
@@ -28,7 +30,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     });
 
     return () => unsub();
-  }, [activePortfolio?.id, updateLiveQuotes]);
+  }, [activePortfolio?.id, symbolsKey, updateLiveQuotes]);
 
   return (
     <div className="min-h-screen bg-[#0D1117] text-[#E5E7EB] flex flex-col font-sans">

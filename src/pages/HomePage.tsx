@@ -2,26 +2,19 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AppShell } from '../components/ui/AppShell';
 import { useQuotes } from '../hooks/useQuotes';
-import { CURATED_UNIVERSE } from '../services/mock/mockUniverse';
-import { TrendingUp, TrendingDown, Layers, Activity, Globe, Star, ArrowUpRight } from 'lucide-react';
+import { CURATED_UNIVERSE, generateFallbackQuote } from '../services/mock/mockUniverse';
+import { TrendingUp, TrendingDown, Globe, Star, ArrowUpRight, RefreshCw, Zap } from 'lucide-react';
 import { usePortfolioStore } from '../store/usePortfolioStore';
 
 export const HomePage: React.FC = () => {
   const symbols = CURATED_UNIVERSE.map(a => a.symbol);
-  const { quotes, isLoading, containerRef } = useQuotes(symbols, 20000); // 20s tiered poll
+  const { quotes, isLoading, refetch, containerRef } = useQuotes(symbols, 15000);
   const { watchlist, toggleWatchlist } = usePortfolioStore();
 
   const [selectedAssetClass, setSelectedAssetClass] = useState<string>('ALL');
 
   const assetsWithQuotes = CURATED_UNIVERSE.map(a => {
-    const q = quotes[a.symbol] || {
-      price: 1000,
-      change: 12,
-      changePct: 1.2,
-      prevClose: 988,
-      isDelayed: true,
-      provider: 'InvestSense Cache'
-    };
+    const q = quotes[a.symbol] || generateFallbackQuote(a.symbol);
     return { ...a, quote: q };
   });
 
@@ -34,6 +27,17 @@ export const HomePage: React.FC = () => {
   const topGainers = sortedByChange.slice(0, 5);
   const topLosers = sortedByChange.slice(-5).reverse();
 
+  // Index real-time tickers
+  const niftyQuote = quotes['NIFTY_50'] || quotes['NIFTY_FUT'] || generateFallbackQuote('NIFTY_50');
+  const bankNiftyQuote = quotes['NIFTY_BANK'] || quotes['BANKNIFTY_FUT'] || generateFallbackQuote('NIFTY_BANK');
+  const sensexQuote = quotes['SENSEX'] || generateFallbackQuote('SENSEX');
+  const goldQuote = quotes['GOLDBEES'] || generateFallbackQuote('GOLDBEES');
+
+  const formatPrice = (price: number, currency?: string) => {
+    const sym = currency === 'USD' ? '$' : '₹';
+    return `${sym}${price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
   return (
     <AppShell>
       <div ref={containerRef} className="space-y-6">
@@ -42,23 +46,80 @@ export const HomePage: React.FC = () => {
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs font-mono text-[#2DD4BF]">
               <Globe className="w-4 h-4" />
-              <span>India Market Universe (NSE / BSE / RBI Gold)</span>
+              <span>Real-Time Market Universe (NSE / BSE / Global)</span>
               <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-ping" />
             </div>
             <h1 className="text-2xl font-bold font-display text-[#E5E7EB]">
-              Investment Universe & Trading Tickers
+              Investment Universe & Live Tickers
             </h1>
             <p className="text-xs text-[#8B96A5]">
-              Real-time quotes with rate-limited fallback provider chain (Finnhub • TwelveData • FMP • EOD)
+              Streaming real-time pricing via live market feeds and multi-provider APIs.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-mono">
-            <div className="px-3 py-1.5 rounded-lg bg-[#1C2530] border border-[#232B36] text-[#E5E7EB]">
-              Nifty 50: <span className="text-[#22C55E] font-bold">24,450.20 (+0.82%)</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => refetch()}
+              disabled={isLoading}
+              className="px-3 py-1.5 rounded-lg bg-[#1C2530] border border-[#232B36] text-xs font-mono text-[#2DD4BF] hover:border-[#2DD4BF] transition-all flex items-center gap-1.5"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              <span>{isLoading ? 'Syncing...' : 'Refresh Quotes'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Real-time Major Market Indices Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
+          <div className="bg-[#161B22] border border-[#232B36] rounded-xl p-3">
+            <div className="text-[10px] text-[#8B96A5] flex items-center justify-between">
+              <span>NIFTY 50</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
             </div>
-            <div className="px-3 py-1.5 rounded-lg bg-[#1C2530] border border-[#232B36] text-[#E5E7EB]">
-              Nifty Bank: <span className="text-[#22C55E] font-bold">51,200.00 (+0.68%)</span>
+            <div className="text-base font-bold text-[#E5E7EB] mt-0.5">
+              {niftyQuote.price.toLocaleString('en-IN')}
+            </div>
+            <div className={`text-[11px] font-bold ${niftyQuote.changePct >= 0 ? 'text-[#22C55E]' : 'text-[#FB4B5C]'}`}>
+              {niftyQuote.changePct >= 0 ? '+' : ''}{niftyQuote.changePct}% ({niftyQuote.change >= 0 ? '+' : ''}{niftyQuote.change})
+            </div>
+          </div>
+
+          <div className="bg-[#161B22] border border-[#232B36] rounded-xl p-3">
+            <div className="text-[10px] text-[#8B96A5] flex items-center justify-between">
+              <span>BANK NIFTY</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+            </div>
+            <div className="text-base font-bold text-[#E5E7EB] mt-0.5">
+              {bankNiftyQuote.price.toLocaleString('en-IN')}
+            </div>
+            <div className={`text-[11px] font-bold ${bankNiftyQuote.changePct >= 0 ? 'text-[#22C55E]' : 'text-[#FB4B5C]'}`}>
+              {bankNiftyQuote.changePct >= 0 ? '+' : ''}{bankNiftyQuote.changePct}% ({bankNiftyQuote.change >= 0 ? '+' : ''}{bankNiftyQuote.change})
+            </div>
+          </div>
+
+          <div className="bg-[#161B22] border border-[#232B36] rounded-xl p-3">
+            <div className="text-[10px] text-[#8B96A5] flex items-center justify-between">
+              <span>BSE SENSEX</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+            </div>
+            <div className="text-base font-bold text-[#E5E7EB] mt-0.5">
+              {sensexQuote.price.toLocaleString('en-IN')}
+            </div>
+            <div className={`text-[11px] font-bold ${sensexQuote.changePct >= 0 ? 'text-[#22C55E]' : 'text-[#FB4B5C]'}`}>
+              {sensexQuote.changePct >= 0 ? '+' : ''}{sensexQuote.changePct}%
+            </div>
+          </div>
+
+          <div className="bg-[#161B22] border border-[#232B36] rounded-xl p-3">
+            <div className="text-[10px] text-[#8B96A5] flex items-center justify-between">
+              <span>GOLD BEES</span>
+              <Zap className="w-3 h-3 text-[#F5B841]" />
+            </div>
+            <div className="text-base font-bold text-[#E5E7EB] mt-0.5">
+              ₹{goldQuote.price.toLocaleString('en-IN')}
+            </div>
+            <div className={`text-[11px] font-bold ${goldQuote.changePct >= 0 ? 'text-[#22C55E]' : 'text-[#FB4B5C]'}`}>
+              {goldQuote.changePct >= 0 ? '+' : ''}{goldQuote.changePct}%
             </div>
           </div>
         </div>
@@ -187,7 +248,10 @@ export const HomePage: React.FC = () => {
                       </td>
 
                       <td className="py-3 px-4 text-right font-mono font-bold text-[#E5E7EB]">
-                        ₹{item.quote.price.toLocaleString('en-IN')}
+                        <div>{formatPrice(item.quote.price, item.currency)}</div>
+                        {item.quote.provider && (
+                          <div className="text-[9px] text-[#2DD4BF] font-normal">{item.quote.provider}</div>
+                        )}
                       </td>
 
                       <td className="py-3 px-4 text-right font-mono font-semibold">

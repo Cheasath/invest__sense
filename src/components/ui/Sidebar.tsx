@@ -14,7 +14,8 @@ import {
   Star,
   Settings,
   Info,
-  Shield
+  Shield,
+  ShieldCheck
 } from 'lucide-react';
 import { usePortfolioStore } from '../../store/usePortfolioStore';
 
@@ -23,6 +24,12 @@ export const Sidebar: React.FC = () => {
   const pfId = activePortfolio?.id || 'pf_main_01';
 
   const navGroups = [
+    {
+      title: 'CORE RISK ARCHITECTURE',
+      items: [
+        { to: '/financial-dna', label: 'Financial DNA Engine', icon: ShieldCheck, badge: 'Baseline' }
+      ]
+    },
     {
       title: 'MARKET & DASHBOARD',
       items: [
@@ -99,18 +106,15 @@ export const Sidebar: React.FC = () => {
         ))}
       </div>
 
-      {/* Footer System Status Banner */}
-      <div className="p-3 bg-[#161B22] border border-[#232B36] rounded-xl text-[11px] text-[#8B96A5] font-mono space-y-1">
-        <div className="flex items-center justify-between text-[#22C55E]">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
-            Price Engine Live
-          </span>
-          <span className="text-[10px] text-[#8B96A5]">INR Mode</span>
+      {/* Institutional Compliance Disclaimer Banner */}
+      <div className="p-3 bg-[#161B22] border border-[#232B36] rounded-xl space-y-1 text-[11px] font-mono text-[#8B96A5]">
+        <div className="flex items-center gap-1.5 text-[#2DD4BF] font-bold text-[10px]">
+          <Shield className="w-3.5 h-3.5" />
+          <span>RESEARCH & EDUCATIONAL</span>
         </div>
-        <div className="text-[10px] text-[#8B96A5]">
-          Finnhub • TwelveData • FMP • EOD
-        </div>
+        <p className="text-[10px] leading-tight">
+          SEBI / SEC compliant non-discretionary decision-support framework.
+        </p>
       </div>
     </aside>
   );

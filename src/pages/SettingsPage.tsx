@@ -111,6 +111,49 @@ export const SettingsPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Codebase Export & Offline Documentation Card */}
+        <div className="bg-[#161B22] border border-[#232B36] rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-[#232B36] pb-3">
+            <h3 className="text-sm font-bold font-display uppercase text-[#E5E7EB] tracking-wider flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#2DD4BF]" />
+              Project Codebase Export & Documentation
+            </h3>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#2DD4BF]/10 text-[#2DD4BF] border border-[#2DD4BF]/30">
+              51 Files Bundled
+            </span>
+          </div>
+
+          <p className="text-xs text-[#8B96A5] leading-relaxed">
+            Download the complete source code of the entire application as a single structured text document, or open the print-ready PDF book format.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <a
+              href="/api/download-full-code"
+              download="InvestSense_Complete_Codebase.txt"
+              className="flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl bg-[#1C2530] border border-[#232B36] hover:border-[#2DD4BF] text-[#E5E7EB] hover:text-[#2DD4BF] text-xs font-mono font-bold transition-all shadow-md group"
+            >
+              <span className="text-base group-hover:scale-110 transition-transform">📥</span>
+              <span>Download Full Code (.txt)</span>
+            </a>
+
+            <a
+              href="/api/download-code-doc"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl bg-[#2DD4BF]/10 border border-[#2DD4BF]/30 hover:bg-[#2DD4BF]/20 text-[#2DD4BF] text-xs font-mono font-bold transition-all shadow-md group"
+            >
+              <span className="text-base group-hover:scale-110 transition-transform">📄</span>
+              <span>Print / Save as PDF Document</span>
+            </a>
+          </div>
+
+          <div className="p-3 bg-[#0D1117] rounded-xl border border-[#232B36] text-[11px] text-[#8B96A5] space-y-1 font-mono">
+            <div className="text-[#E5E7EB] font-bold">Alternative: Download as ZIP via AI Studio</div>
+            <div>You can also click the top-right AI Studio project menu and choose <strong>"Export to ZIP"</strong> or <strong>"Export to GitHub"</strong> to download the entire repository with folder structure.</div>
+          </div>
+        </div>
       </div>
     </AppShell>
   );

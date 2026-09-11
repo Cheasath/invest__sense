@@ -7,6 +7,13 @@ export function useVisiblePolling(
 ) {
   const [isVisible, setIsVisible] = useState(true);
   const [isTabFocused, setIsTabFocused] = useState(true);
+  const callbackRef = useRef(callback);
+  const lastExecutedRef = useRef<number>(0);
+
+  // Keep latest callback reference without triggering re-subscriptions
+  useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
 
   // Track page visibility tab focus
   useEffect(() => {
@@ -39,13 +46,18 @@ export function useVisiblePolling(
   useEffect(() => {
     if (!isTabFocused || !isVisible) return;
 
-    // Execute immediately when becoming visible
-    callback();
+    // Run once on visibility if not run within the last interval
+    const now = Date.now();
+    if (now - lastExecutedRef.current >= intervalMs) {
+      lastExecutedRef.current = now;
+      callbackRef.current();
+    }
 
     const timer = setInterval(() => {
-      callback();
+      lastExecutedRef.current = Date.now();
+      callbackRef.current();
     }, intervalMs);
 
     return () => clearInterval(timer);
-  }, [isTabFocused, isVisible, intervalMs, callback]);
+  }, [isTabFocused, isVisible, intervalMs]);
 }
